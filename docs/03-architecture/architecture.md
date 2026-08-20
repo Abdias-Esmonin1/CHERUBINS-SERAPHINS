@@ -1,0 +1,112 @@
+# Architecture technique — CHERUBINS SERAPHINS
+
+**Version :** 1.0 (MVP) — Livrable 2, consolidé
+**Statut :** Référence validée
+
+---
+
+## 1. Architecture globale
+
+```
+Utilisateur (mobile/desktop)
+        |
+     Next.js / React (frontend)
+        |
+     FastAPI (backend, /api/v1)
+        |
+     PostgreSQL 16
+        |
+     Redis (déclaré, non utilisé par le code applicatif en MVP)
+        |
+     pgvector (extension future, non activée en MVP)
+```
+
+Aucune communication directe frontend <-> PostgreSQL. Toute donnée
+transite par l'API. Les services externes (Spotify, YouTube) restent
+hors MVP et ne seront jamais une source automatique de paroles
+(Stratégie de contenu §8, §13).
+
+## 2. Architecture backend (FastAPI)
+
+Pattern : **Router -> Service -> Repository -> Model**. Un router
+n'appelle jamais SQLAlchemy directement ; un service ne construit
+jamais de réponse HTTP.
+
+```
+backend/app/
+├── main.py
+├── core/          # config, database, security, dependencies
+├── models/        # SQLAlchemy 2.x
+├── schemas/        # Pydantic v2 (à partir de la Phase 2)
+├── repositories/    # accès données pur (à partir de la Phase 2)
+├── services/         # logique métier (à partir de la Phase 2)
+├── routers/           # endpoints HTTP (à partir de la Phase 2)
+├── exceptions/          # exceptions métier + handler global
+└── tests/
+```
+
+**État Phase 1** : `core/`, `exceptions/`, `main.py` (avec `/health`),
+Alembic configurés. `schemas/`, `repositories/`, `services/`,
+`routers/` seront peuplés à partir de la Phase 2.
+
+## 3. Architecture frontend (Next.js)
+
+Non démarrée (Phase 8). Voir Livrable 5 pour la spécification
+complète (routes, composants, design system, tokens).
+
+## 4. Architecture PostgreSQL
+
+Modèle de données MVP (Livrable 1, validé) :
+```
+users, roles, categories, languages, artists, albums, songs,
+lyrics, translations, favorites, rights_records
+```
+Hors MVP (décision définitive) : `artist_aliases`, `lyrics_versions`,
+`sources` (remplacée par des champs `source_type`/`source_url` sur
+`lyrics`/`translations`), `history`.
+
+Détail complet des colonnes/contraintes : `docs/04-database/database.md`.
+
+**État Phase 1** : 4 tables créées (`roles`, `categories`, `languages`,
+`users`), migration `0001_initial`. Les 7 tables restantes seront
+ajoutées phase par phase (Catalogue, Lyrics, Translations, Favorites,
+Admin).
+
+## 5. Architecture Redis
+
+Non utilisé par le code applicatif en MVP. Déclaré dans
+`docker-compose.yml` par anticipation (Livrable 2 §5, décision
+validée).
+
+## 6. Sécurité
+
+- Mots de passe : bcrypt (`core/security.py`, Phase 1 — utilitaires
+  prêts, pas encore branchés à des endpoints).
+- JWT : HS256, access token courte durée, sans refresh token (décision
+  validée, Livrable 2 §13).
+- Permissions : `roles.name IN ('USER','ADMIN')` uniquement, pas de
+  RBAC fin en MVP.
+- Aucune exception brute (SQLAlchemy, Python) ne fuite vers le client
+  (`exceptions/handlers.py`, Phase 1).
+
+## 7. Règle fondamentale des droits (rappel)
+
+```
+authorization_status == AUTHORIZED
+AND (expiration_date IS NULL OR expiration_date >= now())
+  -> contenu visible publiquement
+
+Auteur (submitted_by_user_id == current_user.id)
+  -> contenu toujours visible, quel que soit le statut
+
+ADMIN
+  -> contenu toujours visible
+```
+Appliquée exclusivement côté backend (service), jamais côté frontend
+seul. `rights_records` est append-only (aucun `PUT`/`PATCH`/`DELETE`).
+
+## 8. Historique des décisions
+
+Voir Livrables 1 à 5 (conception complète, validée avant
+implémentation) pour le détail exhaustif des arbitrages, incohérences
+résolues, et diagrammes de flux.

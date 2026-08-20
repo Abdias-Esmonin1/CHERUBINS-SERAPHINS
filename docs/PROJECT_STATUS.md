@@ -1,0 +1,53 @@
+# État du projet — CHERUBINS SERAPHINS
+
+**Dernière mise à jour :** Phase 1 — Backend Foundation
+
+## Terminé
+
+- Cadrage complet (analyse de cadrage, MCD/MLD, architecture technique,
+  spécification API, wireframes, architecture frontend) — Livrables 1 à 5.
+- Modèles SQLAlchemy : `Role`, `User`, `Category`, `Language`.
+- Infrastructure backend (Phase 1) :
+  - Configuration (`core/config.py`, variables d'environnement).
+  - Connexion PostgreSQL asynchrone (`core/database.py`).
+  - Utilitaires de sécurité : hash bcrypt, JWT encode/decode
+    (`core/security.py`) — pas encore branchés à des endpoints.
+  - Gestion d'erreurs globale avec enveloppe JSON standard
+    (`exceptions/`).
+  - `main.py` fonctionnel avec `GET /health`.
+  - Alembic configuré, migration initiale `0001_initial`
+    (roles, categories, languages, users).
+  - Suite de tests Phase 1 (8 tests, tous passants).
+  - Docker : `backend/Dockerfile`, `docker-compose.yml`
+    (backend + postgres + redis).
+
+## En cours / à faire (par phase, ordre validé)
+
+- Phase 2 — Authentication (register/login/logout/me).
+- Phase 3 — Catalogue (songs/artists/albums/categories/languages).
+- Phase 4 — Lyrics.
+- Phase 5 — Translations.
+- Phase 6 — Favorites.
+- Phase 7 — Administration (modération, rights records).
+- Phase 8 — Frontend Next.js.
+- Phase 9 — Tests (couverture complète).
+- Phase 10 — Docker/CI finalisation (ajout du service frontend).
+
+## Décisions validées (rappel)
+
+- Modèle de données MVP strict : `users, roles, categories, languages,
+  artists, albums, songs, lyrics, translations, favorites,
+  rights_records`.
+- Hors MVP : `artist_aliases`, `lyrics_versions`, `sources` (table
+  dédiée — remplacée par des champs sur `lyrics`/`translations`),
+  `history`.
+- Redis déclaré en infrastructure, non utilisé par le code applicatif
+  en MVP.
+- Pas de refresh token JWT en MVP.
+- Paroles/traductions visibles publiquement uniquement si
+  `authorization_status == AUTHORIZED` et non expirées — appliqué
+  côté backend exclusivement.
+
+Le détail complet des décisions est consigné dans
+`docs/03-architecture/architecture.md`, `docs/04-database/database.md`
+et `docs/05-api/api.md`.

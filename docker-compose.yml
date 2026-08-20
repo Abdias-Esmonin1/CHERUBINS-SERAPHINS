@@ -1,0 +1,56 @@
+# Environnement de développement — CHERUBINS SERAPHINS
+#
+# Phase 1 (Backend Foundation) : uniquement backend + postgres + redis.
+# Le service frontend sera ajouté en Phase 8 (Frontend Next.js) une
+# fois que frontend/ contiendra un projet Next.js réel — un Dockerfile
+# vide ne peut pas être construit, cf. Livrable 2 §17 (architecture
+# Docker cible : frontend + backend + postgres + redis).
+#
+# Redis est déclaré mais non utilisé par le code applicatif en MVP
+# (décision validée, Livrable 2 §5 / §8) — présent pour éviter une
+# réécriture d'infrastructure lors du passage en V2.
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/app:/app/app
+      - ./backend/migrations:/app/migrations
+      - ./backend/alembic.ini:/app/alembic.ini
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+    networks:
+      - cherubins_network
+
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: cherubins
+      POSTGRES_PASSWORD: changeme
+      POSTGRES_DB: cherubins_seraphins
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - cherubins_network
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    networks:
+      - cherubins_network
+
+volumes:
+  postgres_data:
+
+networks:
+  cherubins_network:
+    driver: bridge
