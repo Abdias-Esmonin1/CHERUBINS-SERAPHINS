@@ -32,6 +32,26 @@
     uniquement — aucun PostgreSQL disponible dans l'environnement
     d'implémentation ; le dev/prod restent strictement PostgreSQL).
 
+- Phase 3 — Catalogue (Terminée) :
+  - Modèles `Artist`, `Album`, `Song` (migration `0002_catalog`,
+    chaînée après `0001`).
+  - `GET /categories`, `/languages` (lecture publique).
+  - `GET/POST /artists`, `GET /artists/{slug}` — slug généré
+    serveur, jamais fourni par le client.
+  - `GET/POST /albums`, `GET /albums/{id}`.
+  - `GET/POST /songs`, `GET /songs/search`, `GET /songs/{slug}`,
+    `PUT /songs/{id}` — statut `DRAFT` par défaut, seul `PUBLISHED`
+    visible publiquement, indépendant du futur statut des paroles.
+  - `require_admin` appliqué sur toutes les routes de création/mise
+    à jour.
+  - 25 nouveaux tests (58 au total), tous passants, 3 exécutions
+    consécutives sans flakiness.
+  - Limitations documentées (voir `docs/05-api/api.md`) : recherche
+    par `ILIKE` plutôt que FTS PostgreSQL cible ; `lyrics_available`
+    différé à la Phase 4 ; `PUT`/`DELETE` sur artists/albums/
+    categories/languages différés (hors périmètre explicite de cette
+    phase, non abandonnés).
+
 ## En cours / à faire (par phase, ordre validé)
 - Phase 3 — Catalogue (songs/artists/albums/categories/languages).
 - Phase 4 — Lyrics.

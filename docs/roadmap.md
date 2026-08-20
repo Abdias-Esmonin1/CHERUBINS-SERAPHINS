@@ -6,7 +6,7 @@
 |---|---|---|
 | 1 | Backend Foundation (config, DB, Alembic, /health, tests) | ✅ Terminée |
 | 2 | Authentication (register/login/logout/me) | ✅ Terminée |
-| 3 | Catalogue (songs/artists/albums/categories/languages) | ⏳ À venir |
+| 3 | Catalogue (artists/albums/songs, categories, languages) | ✅ Terminée |
 | 4 | Lyrics | ⏳ À venir |
 | 5 | Translations | ⏳ À venir |
 | 6 | Favorites | ⏳ À venir |

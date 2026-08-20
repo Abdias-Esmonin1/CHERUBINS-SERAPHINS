@@ -277,8 +277,19 @@ def test_decode_access_token_round_trip() -> None:
 
 
 def test_decode_access_token_rejects_tampered_token() -> None:
+    """Corrige un test flaky : le tout dernier caractère base64url d'un
+    JWT HS256 ne code que 4 bits significatifs (256 bits / 6 par
+    caractère laisse un reste) — le modifier peut, par coïncidence,
+    ne changer aucun bit réel de la signature selon le token généré,
+    rendant le test aléatoirement faux-positif. On altère ici un
+    caractère du milieu de la signature, qui invalide toujours la
+    signature de façon déterministe."""
     from app.core.security import create_access_token
 
     token = create_access_token(subject="some-user-id")
-    tampered = token[:-1] + ("A" if token[-1] != "A" else "B")
+    header, payload, signature = token.split(".")
+    mid = len(signature) // 2
+    tampered_char = "A" if signature[mid] != "A" else "B"
+    tampered_signature = signature[:mid] + tampered_char + signature[mid + 1 :]
+    tampered = f"{header}.{payload}.{tampered_signature}"
     assert decode_access_token(tampered) is None

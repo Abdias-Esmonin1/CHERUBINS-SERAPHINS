@@ -62,6 +62,14 @@ Le JWT est posé exclusivement via cookie `HttpOnly` — jamais dans le
 corps JSON (décision explicite Phase 2, qui précise le Livrable 3
 §2.1 initial). Voir `docs/05-api/api.md` pour le détail.
 
+**État Phase 3** : catalogue Artists → Albums → Songs implémenté
+(`models/{artist,album,song}.py`, `schemas/`, `repositories/`,
+`services/catalog_service.py`, `routers/{artists,albums,songs,
+categories,languages}.py`). Recherche par `ILIKE` (limitation
+documentée, voir `docs/05-api/api.md`). CRUD `PUT`/`DELETE` sur
+artists/albums/categories/languages différé (non implémenté en Phase
+3, périmètre volontairement centré sur Artists → Albums → Songs).
+
 ## 3. Architecture frontend (Next.js)
 
 Non démarrée (Phase 8). Voir Livrable 5 pour la spécification

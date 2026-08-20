@@ -13,7 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import get_settings
 from app.exceptions.handlers import register_exception_handlers
-from app.routers import auth
+from app.routers import albums, artists, auth, categories, languages, songs
 
 settings = get_settings()
 
@@ -43,6 +43,11 @@ async def health_check() -> dict:
 
 
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
+app.include_router(categories.router, prefix="/api/v1/categories", tags=["categories"])
+app.include_router(languages.router, prefix="/api/v1/languages", tags=["languages"])
+app.include_router(artists.router, prefix="/api/v1/artists", tags=["artists"])
+app.include_router(albums.router, prefix="/api/v1/albums", tags=["albums"])
+app.include_router(songs.router, prefix="/api/v1/songs", tags=["songs"])
 
 # Les routers métier des phases suivantes seront inclus ici :
-# app.include_router(songs.router, prefix="/api/v1/songs", tags=["songs"])
+# app.include_router(lyrics.router, prefix="/api/v1/lyrics", tags=["lyrics"])
