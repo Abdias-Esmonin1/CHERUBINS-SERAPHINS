@@ -13,6 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import get_settings
 from app.exceptions.handlers import register_exception_handlers
+from app.routers import auth
 
 settings = get_settings()
 
@@ -41,6 +42,7 @@ async def health_check() -> dict:
     return {"status": "ok", "environment": settings.environment}
 
 
-# Les routers métier seront inclus ici au fil des phases, ex. :
-# from app.routers import auth
-# app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
+
+# Les routers métier des phases suivantes seront inclus ici :
+# app.include_router(songs.router, prefix="/api/v1/songs", tags=["songs"])

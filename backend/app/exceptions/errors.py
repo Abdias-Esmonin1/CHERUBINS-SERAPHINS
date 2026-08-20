@@ -13,9 +13,11 @@ class AppError(Exception):
     code: str = "APP_ERROR"
     status_code: int = 500
 
-    def __init__(self, message: str, details: dict | None = None) -> None:
+    def __init__(self, message: str, details: dict | None = None, code: str | None = None) -> None:
         self.message = message
         self.details = details
+        if code is not None:
+            self.code = code
         super().__init__(message)
 
 

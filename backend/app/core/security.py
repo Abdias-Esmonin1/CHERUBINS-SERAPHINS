@@ -17,6 +17,10 @@ settings = get_settings()
 
 _pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+# Nom du cookie HttpOnly portant le JWT (Livrable 2 §13, présentes
+# instructions §5-6 Phase 2). Jamais accessible en JavaScript.
+ACCESS_TOKEN_COOKIE_NAME = "access_token"
+
 
 def hash_password(password: str) -> str:
     """Hash un mot de passe en clair avec bcrypt."""

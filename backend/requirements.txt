@@ -5,17 +5,20 @@ uvicorn[standard]==0.30.6
 # Configuration
 pydantic==2.9.2
 pydantic-settings==2.5.2
+email-validator==2.2.0
 
 # Base de données
 sqlalchemy==2.0.35
 asyncpg==0.29.0
 alembic==1.13.2
 
-# Sécurité (hash + JWT) — utilitaires prêts pour la Phase 2 (auth)
+# Sécurité (hash + JWT)
 passlib[bcrypt]==1.7.4
+bcrypt==4.0.1  # épinglé : passlib 1.7.4 est incompatible avec bcrypt>=4.1 (bug connu)
 python-jose[cryptography]==3.3.0
 
 # Tests
 pytest==8.3.3
 pytest-asyncio==0.24.0
 httpx==0.27.2
+aiosqlite==0.20.0  # base de test en mémoire uniquement — jamais utilisé en dev/prod (PostgreSQL)

@@ -46,8 +46,21 @@ backend/app/
 ```
 
 **État Phase 1** : `core/`, `exceptions/`, `main.py` (avec `/health`),
-Alembic configurés. `schemas/`, `repositories/`, `services/`,
-`routers/` seront peuplés à partir de la Phase 2.
+Alembic configurés.
+
+**État Phase 2** : authentification complète implémentée en suivant
+strictement le pattern Router -> Service -> Repository -> Model :
+- `schemas/auth.py`, `schemas/user.py` (Pydantic v2)
+- `repositories/user_repository.py`, `repositories/role_repository.py`
+- `services/auth_service.py` (register, login, résolution utilisateur
+  depuis JWT)
+- `routers/auth.py` (`/api/v1/auth/{register,login,logout,me}`)
+- `core/dependencies.py` complété : `get_current_user`, `require_admin`
+- `core/security.py` complété : nom du cookie JWT (`ACCESS_TOKEN_COOKIE_NAME`)
+
+Le JWT est posé exclusivement via cookie `HttpOnly` — jamais dans le
+corps JSON (décision explicite Phase 2, qui précise le Livrable 3
+§2.1 initial). Voir `docs/05-api/api.md` pour le détail.
 
 ## 3. Architecture frontend (Next.js)
 

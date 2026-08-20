@@ -5,7 +5,7 @@
 | Phase | Contenu | Statut |
 |---|---|---|
 | 1 | Backend Foundation (config, DB, Alembic, /health, tests) | ✅ Terminée |
-| 2 | Authentication (register/login/logout/me) | ⏳ À venir |
+| 2 | Authentication (register/login/logout/me) | ✅ Terminée |
 | 3 | Catalogue (songs/artists/albums/categories/languages) | ⏳ À venir |
 | 4 | Lyrics | ⏳ À venir |
 | 5 | Translations | ⏳ À venir |

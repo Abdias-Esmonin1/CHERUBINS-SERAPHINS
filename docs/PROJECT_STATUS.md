@@ -21,9 +21,18 @@
   - Docker : `backend/Dockerfile`, `docker-compose.yml`
     (backend + postgres + redis).
 
-## En cours / à faire (par phase, ordre validé)
+- Phase 2 — Authentication (Terminée) :
+  - `POST /api/v1/auth/register`, `/login`, `/logout`, `GET /me`.
+  - JWT posé exclusivement via cookie `HttpOnly` (jamais en JSON).
+  - Hash bcrypt, anti-énumération sur login, gestion des comptes
+    désactivés/soft-deleted.
+  - `core/dependencies.py` : `get_current_user`, `require_admin`.
+  - 25 tests (33 au total avec la Phase 1), tous passants.
+  - Base de test : SQLite en mémoire (décision technique de test
+    uniquement — aucun PostgreSQL disponible dans l'environnement
+    d'implémentation ; le dev/prod restent strictement PostgreSQL).
 
-- Phase 2 — Authentication (register/login/logout/me).
+## En cours / à faire (par phase, ordre validé)
 - Phase 3 — Catalogue (songs/artists/albums/categories/languages).
 - Phase 4 — Lyrics.
 - Phase 5 — Translations.
