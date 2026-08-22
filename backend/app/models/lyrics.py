@@ -52,6 +52,7 @@ class Lyrics(Base):
     language: Mapped["Language"] = relationship()
     submitted_by: Mapped["User | None"] = relationship(foreign_keys=[submitted_by_user_id])
     reviewed_by: Mapped["User | None"] = relationship(foreign_keys=[reviewed_by_user_id])
+    translations: Mapped[list["Translation"]] = relationship(back_populates="lyrics")
 
     __table_args__ = (
         CheckConstraint(

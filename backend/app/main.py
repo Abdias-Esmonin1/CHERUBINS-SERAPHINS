@@ -13,7 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import get_settings
 from app.exceptions.handlers import register_exception_handlers
-from app.routers import albums, artists, auth, categories, languages, lyrics, songs
+from app.routers import albums, artists, auth, categories, languages, lyrics, songs, translations
 
 settings = get_settings()
 
@@ -49,6 +49,7 @@ app.include_router(artists.router, prefix="/api/v1/artists", tags=["artists"])
 app.include_router(albums.router, prefix="/api/v1/albums", tags=["albums"])
 app.include_router(songs.router, prefix="/api/v1/songs", tags=["songs"])
 app.include_router(lyrics.router, prefix="/api/v1/lyrics", tags=["lyrics"])
+app.include_router(translations.router, prefix="/api/v1/translations", tags=["translations"])
 
 # Les routers métier des phases suivantes seront inclus ici :
-# app.include_router(translations.router, prefix="/api/v1/translations", tags=["translations"])
+# app.include_router(favorites.router, prefix="/api/v1/favorites", tags=["favorites"])

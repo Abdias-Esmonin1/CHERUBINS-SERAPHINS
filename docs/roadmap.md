@@ -8,7 +8,7 @@
 | 2 | Authentication (register/login/logout/me) | ✅ Terminée |
 | 3 | Catalogue (artists/albums/songs, categories, languages) | ✅ Terminée |
 | 4 | Lyrics (portée Option A — hors rights_records/modération) | ✅ Terminée |
-| 5 | Translations | ⏳ À venir |
+| 5 | Translations (portée Option A — symétrique Phase 4) | ✅ Terminée |
 | 6 | Favorites | ⏳ À venir |
 | 7 | Administration (modération, rights records) | ⏳ À venir |
 | 8 | Frontend Next.js | ⏳ À venir |

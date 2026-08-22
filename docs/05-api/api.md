@@ -121,8 +121,8 @@ artist_id/album_id/category_id/original_language_id invalide.
 
 ## Non implémenté (phases suivantes)
 
-`translations`, `favorites`, `admin/*` (modération, `rights_records`)
-— voir `docs/roadmap.md`.
+`favorites`, `admin/*` (modération, `rights_records`) — voir
+`docs/roadmap.md`.
 
 ## Implémenté — Phase 4 (Lyrics)
 
@@ -185,6 +185,67 @@ l'auteur... peut corriger... tant que `authorization_status =
 PENDING`"). Cet endpoint ne gère que l'édition de contenu — les
 actions de modération de la Phase 7 (`authorize`/`reject`/`revoke`)
 seront un mécanisme distinct, non soumis à cette même restriction.
+
+## Implémenté — Phase 5 (Translations)
+
+```
+POST /api/v1/translations
+GET  /api/v1/translations/mine
+GET  /api/v1/translations/lyrics/{lyrics_id}
+PUT  /api/v1/translations/{translation_id}
+```
+
+**⚠️ Portée Phase 5 = Option A (symétrique à la Phase 4, validée)** :
+aucune transition de statut n'est possible via l'API. Les endpoints
+`PATCH /admin/translations/{id}/{authorize,reject,revoke}` et la table
+`rights_records` appartiennent explicitement à la **Phase 7**. Une
+traduction soumise reste `PENDING` jusqu'à cette phase.
+
+**POST /translations** : auth requise (`USER`/`ADMIN`). Body
+`{lyrics_id, target_language_id, content, translation_type,
+source_url?, rights_holder?}` — `submitted_by_user_id` et
+`authorization_status` structurellement absents, forcés côté serveur.
+**Autorisé même si les paroles originales (`lyrics_id`) ne sont pas
+elles-mêmes `AUTHORIZED`** — cycles de droits indépendants (décision
+validée). Erreurs : `404 LYRICS_NOT_FOUND`, `404 LANGUAGE_NOT_FOUND`,
+`409 TRANSLATION_ALREADY_EXISTS` (`UNIQUE(lyrics_id,
+target_language_id)`), `422`.
+
+**GET /translations/lyrics/{lyrics_id}** : public (authentification
+optionnelle). Retourne une **liste** (une entrée par langue cible
+ayant une traduction soumise), avec visibilité déterminée
+**indépendamment pour chaque élément** — deux traductions d'une même
+parole peuvent avoir des auteurs et statuts différents :
+```
+Visiteur public / autre USER : {available: bool, target_language,
+                                 translation_type?, content?}
+                                — translation_type/content omis si
+                                  available=false
+Auteur (de CETTE traduction)  : vue enrichie complète
+ADMIN                          : vue enrichie complète
+```
+Filtre optionnel `?target_language_id=...`. `404 LYRICS_NOT_FOUND` si
+`lyrics_id` invalide. Toujours `200` pour l'absence de contenu (jamais
+`403`/`404`).
+
+**PUT /translations/{id}** : auteur (si `PENDING` uniquement) ou
+`ADMIN` (même restriction — décision d'interprétation identique à
+celle retenue pour `Lyrics`, Phase 4). Body limité à `{content?,
+source_url?, rights_holder?}`. Erreurs : `404
+TRANSLATION_NOT_FOUND`, `403` (tiers), `409
+TRANSLATION_ALREADY_REVIEWED`.
+
+**GET /translations/mine** : auth requise. Soumissions propres, tous
+statuts, paginé, IDOR-safe.
+
+### Écart documenté avec le MCD initial (Phase 5)
+
+Le modèle `Translation` inclut `expiration_date` (absent du MCD
+initial du Livrable 1), nécessaire pour appliquer la règle de
+visibilité déjà validée pour les deux entités. `authorization_reference`
+et `authorization_date` n'ont volontairement PAS été ajoutés par
+simple symétrie avec `Lyrics` — aucune exigence fonctionnelle/API ne
+les requiert en Phase 5.
 
 ## Écarts / limitations documentés — Phase 3
 

@@ -30,7 +30,7 @@ lyrics, translations, favorites, rights_records
 | `albums` | ✅ implémentée (migration `0002_catalog`) |
 | `songs` | ✅ implémentée (migration `0002_catalog`) |
 | `lyrics` | ✅ implémentée (migration `0003_lyrics`) |
-| `translations` | ⏳ Phase 5 — Translations |
+| `translations` | ✅ implémentée (migration `0004_translations`) |
 | `favorites` | ⏳ Phase 6 — Favorites |
 | `rights_records` | ⏳ Phase 7 — Administration |
 
@@ -177,10 +177,54 @@ n'existent PAS dans cette phase — explicitement réservés à la
 jusqu'à l'implémentation de cette phase ultérieure. Ce n'est pas un
 oubli : c'est la portée validée.
 
+## Tables implémentées (Phase 5)
+
+### translations
+```
+id                     UUID PK
+lyrics_id              FK -> lyrics.id NOT NULL              ON DELETE RESTRICT
+target_language_id     FK -> languages.id NOT NULL             ON DELETE RESTRICT
+content                TEXT NOT NULL
+translation_type       VARCHAR(20) NOT NULL
+                       CHECK IN ('OFFICIAL','AUTHOR','HUMAN','AI_GENERATED')
+authorization_status   VARCHAR(20) NOT NULL DEFAULT 'PENDING'
+                       CHECK IN ('PENDING','AUTHORIZED','REJECTED',
+                                 'EXPIRED','REVOKED')
+expiration_date        DATE
+source_url             TEXT
+rights_holder          VARCHAR(255)
+submitted_by_user_id   FK -> users.id                          ON DELETE SET NULL
+reviewed_by_user_id    FK -> users.id                           ON DELETE SET NULL
+created_at             TIMESTAMPTZ NOT NULL DEFAULT now()
+updated_at             TIMESTAMPTZ NOT NULL DEFAULT now()
+UNIQUE(lyrics_id, target_language_id)
+```
+Relation `Lyrics 1 -- N Translation` (plusieurs langues cibles
+possibles). Cycle de droits totalement indépendant de
+`Lyrics.authorization_status` — une traduction peut être `AUTHORIZED`
+alors que l'original ne l'est pas, et inversement.
+`submitted_by_user_id`/`authorization_status` toujours forcés côté
+serveur.
+
+**Écart documenté par rapport au MCD initial (Livrable 1)** :
+`expiration_date` a été ajoutée à `translations` bien que le MCD
+initial ne la mentionnait pas — nécessaire pour appliquer la règle de
+visibilité déjà validée (`AUTHORIZED` + non expiré), qui s'applique
+explicitement aux deux entités. **`authorization_reference` et
+`authorization_date` n'ont volontairement PAS été ajoutés** : rien
+dans le contrat fonctionnel/API de la Phase 5 ne les requiert, et leur
+ajout par simple symétrie avec `Lyrics` a été explicitement exclu par
+consigne.
+
+**Portée Phase 5 (Option A, symétrique à la Phase 4)** : `rights_records`
+et les endpoints de modération n'existent PAS dans cette phase —
+réservés à la **Phase 7 — Administration**. Une traduction soumise
+reste `PENDING` jusqu'à cette phase.
+
 ## Point d'attention documenté (non résolu par du code, pour référence)
 
-`EXPIRED` (sur `lyrics`, implémentée en Phase 4 ; `translations`,
-table à venir) est calculé à
+`EXPIRED` (sur `lyrics` et `translations`, toutes deux implémentées)
+est calculé à
 la lecture (`expiration_date < now()`), jamais écrit automatiquement
 en base — pas de scheduler/Celery/cron en MVP (décision validée,
 Livrable 3, arbitrage final).

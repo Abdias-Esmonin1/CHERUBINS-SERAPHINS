@@ -10,18 +10,19 @@ from app.models import Base, Category, Language, Role, User
 
 def test_expected_tables_are_registered() -> None:
     """Les tables Phase 1 (roles, categories, languages, users),
-    Phase 3 (artists, albums, songs) et Phase 4 (lyrics) doivent
-    exister.
+    Phase 3 (artists, albums, songs), Phase 4 (lyrics) et Phase 5
+    (translations) doivent exister.
 
     Mise à jour justifiée : cette assertion évolue à chaque phase qui
-    ajoute légitimement une table (déjà documenté en Phase 3) — son
-    objectif est de vérifier qu'aucune table imprévue/hors MVP
-    n'apparaît, pas de rester figée à un instant donné.
+    ajoute légitimement une table (même logique déjà documentée en
+    Phase 3 et Phase 4) — son objectif est de vérifier qu'aucune
+    table imprévue/hors MVP n'apparaît, pas de rester figée à un
+    instant donné.
 
-    Les tables encore hors périmètre (translations, favorites,
-    rights_records — Phases 5-7) ne doivent PAS encore être présentes.
-    Les entités définitivement hors MVP (artist_aliases,
-    lyrics_versions, sources, history) ne doivent JAMAIS apparaître.
+    Les tables encore hors périmètre (favorites, rights_records —
+    Phases 6-7) ne doivent PAS encore être présentes. Les entités
+    définitivement hors MVP (artist_aliases, lyrics_versions, sources,
+    history) ne doivent JAMAIS apparaître.
     """
     table_names = set(Base.metadata.tables.keys())
     assert table_names == {
@@ -33,6 +34,7 @@ def test_expected_tables_are_registered() -> None:
         "albums",
         "songs",
         "lyrics",
+        "translations",
     }
 
 

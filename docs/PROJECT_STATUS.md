@@ -81,8 +81,34 @@
     autorisée par la validation Option A, faute d'endpoint de
     modération à ce stade).
 
+- Phase 5 — Translations (Terminée, portée Option A validée,
+  symétrique à la Phase 4) :
+  - Table `translations` (migration `0004_translations`, chaînée
+    après `0003`), relation `Lyrics 1--N Translation`.
+  - `POST /translations` : soumission (`USER`/`ADMIN`),
+    `authorization_status`/`submitted_by_user_id` forcés serveur.
+    Autorisé même si les paroles originales ne sont pas
+    `AUTHORIZED` (cycles de droits indépendants).
+  - `GET /translations/lyrics/{lyrics_id}` : liste avec visibilité
+    déterminée indépendamment par élément (chaque traduction peut
+    avoir un auteur/statut différent), filtre optionnel
+    `target_language_id`.
+  - `PUT /translations/{id}` : édition si `PENDING`, auteur ou ADMIN ;
+    `409 TRANSLATION_ALREADY_REVIEWED` sinon ; `403` tiers.
+  - `GET /translations/mine` : IDOR-safe, tous statuts, paginé.
+  - **Écart documenté vs MCD initial** : `expiration_date` ajoutée à
+    `Translation` (nécessaire à la règle de visibilité déjà validée
+    pour les deux entités) ; `authorization_reference`/
+    `authorization_date` volontairement PAS ajoutés (non requis par
+    le contrat fonctionnel de cette phase).
+  - **Explicitement absents (Option A, réservés à la Phase 7)** :
+    `rights_records`, endpoints
+    `PATCH /admin/translations/{id}/{authorize,reject,revoke}`.
+  - 35 nouveaux tests (125 au total), tous passants, stables sur 3
+    exécutions consécutives. Règle d'expiration vérifiée
+    explicitement (3 cas côté lyrics, 2 côté translations).
+
 ## En cours / à faire (par phase, ordre validé)
-- Phase 5 — Translations.
 - Phase 6 — Favorites.
 - Phase 7 — Administration (modération, rights records).
 - Phase 8 — Frontend Next.js.

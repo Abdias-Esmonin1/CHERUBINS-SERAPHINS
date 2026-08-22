@@ -140,6 +140,17 @@ viewer.
 
 ## 8. Historique des décisions
 
+**État Phase 5** : système Translations implémenté
+(`models/translation.py`, `schemas/translation.py`,
+`repositories/translation_repository.py`,
+`services/translation_service.py`, `routers/translations.py`),
+symétrique à la Phase 4 (Option A). Relation `Lyrics 1--N
+Translation`. Visibilité déterminée indépendamment pour chaque
+traduction (auteurs/statuts potentiellement différents entre langues
+d'une même parole). `rights_records` et modération restent réservés à
+la Phase 7.
+
+
 Voir Livrables 1 à 5 (conception complète, validée avant
 implémentation) pour le détail exhaustif des arbitrages, incohérences
 résolues, et diagrammes de flux.
