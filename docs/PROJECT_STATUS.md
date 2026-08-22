@@ -108,8 +108,26 @@
     exécutions consécutives. Règle d'expiration vérifiée
     explicitement (3 cas côté lyrics, 2 côté translations).
 
+- Phase 6 — Favorites (Terminée) :
+  - Table `favorites` (migration `0005_favorites`, chaînée après
+    `0004`), `UNIQUE(user_id, song_id)`, `ON DELETE CASCADE` sur les
+    deux FK.
+  - `GET/POST /favorites`, `DELETE /favorites/{song_id}` — toutes
+    authentifiées, aucune route publique, aucune notion de
+    droits/statut.
+  - `user_id` structurellement absent du schéma de création, toujours
+    `current_user.id` (IDOR-safe par construction, même principe que
+    `/lyrics/mine`).
+  - `DELETE` scopé strictement à `current_user` : `404
+    FAVORITE_NOT_FOUND` même si le favori existe mais appartient à
+    quelqu'un d'autre (jamais de `403` révélateur).
+  - **Décision documentée** : aucune restriction sur `Song.status` —
+    signalée comme ambiguïté avant implémentation (aucun document ne
+    tranchait ce point), retenue par défaut en l'absence d'objection.
+  - 21 nouveaux tests (146 au total), tous passants, stables sur 3
+    exécutions consécutives.
+
 ## En cours / à faire (par phase, ordre validé)
-- Phase 6 — Favorites.
 - Phase 7 — Administration (modération, rights records).
 - Phase 8 — Frontend Next.js.
 - Phase 9 — Tests (couverture complète).

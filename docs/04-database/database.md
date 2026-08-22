@@ -31,7 +31,7 @@ lyrics, translations, favorites, rights_records
 | `songs` | ✅ implémentée (migration `0002_catalog`) |
 | `lyrics` | ✅ implémentée (migration `0003_lyrics`) |
 | `translations` | ✅ implémentée (migration `0004_translations`) |
-| `favorites` | ⏳ Phase 6 — Favorites |
+| `favorites` | ✅ implémentée (migration `0005_favorites`) |
 | `rights_records` | ⏳ Phase 7 — Administration |
 
 ## Tables implémentées (Phase 1)
@@ -220,6 +220,29 @@ consigne.
 et les endpoints de modération n'existent PAS dans cette phase —
 réservés à la **Phase 7 — Administration**. Une traduction soumise
 reste `PENDING` jusqu'à cette phase.
+
+## Tables implémentées (Phase 6)
+
+### favorites
+```
+id          UUID PK
+user_id     FK -> users.id NOT NULL   ON DELETE CASCADE
+song_id     FK -> songs.id NOT NULL    ON DELETE CASCADE
+created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+UNIQUE(user_id, song_id)
+```
+Aucune notion de droits/statut (contrairement à `lyrics`/
+`translations`) — ressource strictement privée à son propriétaire.
+`ON DELETE CASCADE` (et non `RESTRICT`) : supprimer un utilisateur ou
+une chanson supprime les favoris associés, aucune traçabilité de
+droits n'étant en jeu ici.
+
+**Décision documentée (signalée en amont dans le PLAN PHASE 6,
+ambiguïté §14, non tranchée silencieusement)** : aucune restriction
+sur `Song.status` — une chanson `DRAFT`/`ARCHIVED` peut être mise en
+favori si son UUID est connu ; seule l'existence de la chanson est
+vérifiée (même comportement que `SongRepository.get_by_id`, déjà
+utilisé sans filtre de statut par `Lyrics`/`Translation`).
 
 ## Point d'attention documenté (non résolu par du code, pour référence)
 

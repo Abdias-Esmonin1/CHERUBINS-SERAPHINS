@@ -140,6 +140,18 @@ viewer.
 
 ## 8. Historique des décisions
 
+**État Phase 6** : système Favorites implémenté
+(`models/favorite.py`, `schemas/favorite.py`,
+`repositories/favorite_repository.py`,
+`services/favorite_service.py`, `routers/favorites.py`). Aucune
+notion de droits/statut — ressource strictement privée à
+`current_user`, réutilise `get_current_user` (aucune nouvelle
+dépendance d'authentification nécessaire). `ON DELETE CASCADE`
+(différent de `RESTRICT` utilisé ailleurs) car aucune traçabilité
+n'est en jeu. Décision documentée : pas de restriction sur
+`Song.status` (signalée comme ambiguïté avant implémentation).
+
+
 **État Phase 5** : système Translations implémenté
 (`models/translation.py`, `schemas/translation.py`,
 `repositories/translation_repository.py`,

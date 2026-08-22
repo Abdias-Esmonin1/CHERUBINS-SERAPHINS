@@ -121,8 +121,7 @@ artist_id/album_id/category_id/original_language_id invalide.
 
 ## Non implémenté (phases suivantes)
 
-`favorites`, `admin/*` (modération, `rights_records`) — voir
-`docs/roadmap.md`.
+`admin/*` (modération, `rights_records`) — voir `docs/roadmap.md`.
 
 ## Implémenté — Phase 4 (Lyrics)
 
@@ -246,6 +245,43 @@ visibilité déjà validée pour les deux entités. `authorization_reference`
 et `authorization_date` n'ont volontairement PAS été ajoutés par
 simple symétrie avec `Lyrics` — aucune exigence fonctionnelle/API ne
 les requiert en Phase 5.
+
+## Implémenté — Phase 6 (Favorites)
+
+```
+GET    /api/v1/favorites
+POST   /api/v1/favorites
+DELETE /api/v1/favorites/{song_id}
+```
+
+Aucune notion de droits/statut — toutes les routes exigent
+l'authentification, aucune n'est publique. Aucun endpoint de
+modération (`Favorite` ne possède pas de cycle de droits).
+
+**GET /favorites** : auth requise. Retourne uniquement les favoris de
+`current_user`, paginé. Chaque élément inclut la fiche complète de la
+chanson (`SongRead`, réutilisé tel quel).
+
+**POST /favorites** : auth requise. Body `{song_id}` — `user_id`
+structurellement absent, toujours `current_user.id`. Erreurs :
+`404 SONG_NOT_FOUND`, `409 ALREADY_FAVORITED`
+(`UNIQUE(user_id, song_id)`).
+
+**DELETE /favorites/{song_id}** : auth requise. Supprime uniquement le
+favori appartenant à `current_user` (recherche scopée
+`WHERE user_id = current_user.id AND song_id = {id}` — protection
+IDOR explicite). `404 FAVORITE_NOT_FOUND` si l'utilisateur n'a pas ce
+favori, y compris si le favori existe mais appartient à quelqu'un
+d'autre (jamais de `403` qui révélerait l'existence du favori
+d'autrui).
+
+### Décision documentée (Phase 6)
+
+Aucune restriction sur `Song.status` pour `POST /favorites` — une
+chanson `DRAFT`/`ARCHIVED` peut être ajoutée aux favoris si son UUID
+est connu. Signalé comme ambiguïté avant implémentation (aucun
+document ne tranchait ce point), retenu par défaut en l'absence
+d'objection explicite. Voir `docs/04-database/database.md`.
 
 ## Écarts / limitations documentés — Phase 3
 
