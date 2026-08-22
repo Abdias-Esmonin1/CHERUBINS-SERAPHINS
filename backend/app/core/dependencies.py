@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.security import ACCESS_TOKEN_COOKIE_NAME
-from app.exceptions import ForbiddenError
+from app.exceptions import ForbiddenError, UnauthorizedError
 from app.models.user import User
 from app.services.auth_service import AuthService
 
@@ -42,3 +42,24 @@ async def require_admin(current_user: User = Depends(get_current_user)) -> User:
     if current_user.role.name != "ADMIN":
         raise ForbiddenError("Accès réservé aux administrateurs.", code="FORBIDDEN")
     return current_user
+
+
+async def get_current_user_optional(request: Request, db: AsyncSession = Depends(get_db)) -> User | None:
+    """Comme get_current_user, mais retourne None au lieu de lever 401
+    si aucune session valide n'est présente. Nécessaire pour les
+    endpoints publics dont la réponse varie selon que l'appelant est
+    anonyme, auteur d'une ressource, ou ADMIN (ex. GET
+    /lyrics/song/{id}, Phase 4) sans pour autant exiger
+    l'authentification.
+    """
+    token = request.cookies.get(ACCESS_TOKEN_COOKIE_NAME)
+    if token is None:
+        return None
+    service = AuthService(db)
+    try:
+        return await service.get_current_user_from_token(token)
+    except UnauthorizedError:
+        # Token présent mais invalide/expiré/utilisateur introuvable :
+        # traité comme anonyme plutôt que de lever une erreur, puisque
+        # cet endpoint reste accessible sans authentification.
+        return None

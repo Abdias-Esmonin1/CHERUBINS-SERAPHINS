@@ -48,13 +48,40 @@
     consécutives sans flakiness.
   - Limitations documentées (voir `docs/05-api/api.md`) : recherche
     par `ILIKE` plutôt que FTS PostgreSQL cible ; `lyrics_available`
-    différé à la Phase 4 ; `PUT`/`DELETE` sur artists/albums/
+    différé (voir Phase 4) ; `PUT`/`DELETE` sur artists/albums/
     categories/languages différés (hors périmètre explicite de cette
     phase, non abandonnés).
 
+- Phase 4 — Lyrics (Terminée, portée Option A validée) :
+  - Table `lyrics` (migration `0003_lyrics`, chaînée après `0002`),
+    relation `Song 1--0..1 Lyrics`.
+  - `POST /lyrics` (soumission, `authorization_status=PENDING` et
+    `submitted_by_user_id` forcés serveur, jamais fournis par le
+    client).
+  - `GET /lyrics/song/{song_id}` : visibilité différenciée — public/
+    autre USER (uniquement `AUTHORIZED` + non expiré), auteur (toujours
+    sa propre soumission), ADMIN (toujours) — toujours `200`, jamais
+    `403`/`404` pour absence de contenu.
+  - `PUT /lyrics/{id}` : édition (contenu uniquement) si `PENDING`,
+    par l'auteur ou l'ADMIN ; `409 LYRICS_ALREADY_REVIEWED` sinon ;
+    `403` pour un tiers.
+  - `GET /lyrics/mine` : soumissions propres, tous statuts, paginé,
+    IDOR-safe (aucun `user_id` acceptable en paramètre).
+  - `core/dependencies.py` : ajout `get_current_user_optional`
+    (résolution utilisateur sans lever 401, pour endpoint public à
+    réponse différenciée).
+  - **Explicitement absents (Option A, réservés à la Phase 7)** :
+    table `rights_records`, endpoints
+    `PATCH /admin/lyrics/{id}/{authorize,reject,revoke}`, tout router
+    de modération admin. Une parole soumise reste `PENDING` jusqu'à
+    la Phase 7 — comportement attendu, pas une limitation cachée.
+  - 32 nouveaux tests (90 au total), tous passants, stables sur 3
+    exécutions consécutives. Tests de visibilité `AUTHORIZED`/
+    `EXPIRED` : manipulation directe de la base (explicitement
+    autorisée par la validation Option A, faute d'endpoint de
+    modération à ce stade).
+
 ## En cours / à faire (par phase, ordre validé)
-- Phase 3 — Catalogue (songs/artists/albums/categories/languages).
-- Phase 4 — Lyrics.
 - Phase 5 — Translations.
 - Phase 6 — Favorites.
 - Phase 7 — Administration (modération, rights records).

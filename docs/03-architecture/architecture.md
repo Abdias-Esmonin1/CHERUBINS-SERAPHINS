@@ -126,6 +126,18 @@ ADMIN
 Appliquée exclusivement côté backend (service), jamais côté frontend
 seul. `rights_records` est append-only (aucun `PUT`/`PATCH`/`DELETE`).
 
+**État Phase 4** : système Lyrics implémenté (`models/lyrics.py`,
+`schemas/lyrics.py`, `repositories/lyrics_repository.py`,
+`services/lyrics_service.py`, `routers/lyrics.py`). Portée
+strictement limitée à la soumission, la consultation avec visibilité
+différenciée (public/auteur/ADMIN), et l'édition en `PENDING`
+(**Option A validée**). `rights_records` et la modération admin
+(`authorize`/`reject`/`revoke`) restent explicitement réservés à la
+**Phase 7**. Nouvelle dépendance `get_current_user_optional`
+(`core/dependencies.py`) — résout l'utilisateur courant sans lever 401,
+nécessaire pour un endpoint public dont la réponse varie selon le
+viewer.
+
 ## 8. Historique des décisions
 
 Voir Livrables 1 à 5 (conception complète, validée avant

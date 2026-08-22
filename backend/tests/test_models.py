@@ -9,23 +9,31 @@ from app.models import Base, Category, Language, Role, User
 
 
 def test_expected_tables_are_registered() -> None:
-    """Les tables Phase 1 (roles, categories, languages, users) et
-    Phase 3 (artists, albums, songs) doivent exister.
+    """Les tables Phase 1 (roles, categories, languages, users),
+    Phase 3 (artists, albums, songs) et Phase 4 (lyrics) doivent
+    exister.
 
-    Mise à jour justifiée : cette assertion était initialement figée
-    aux 4 tables de la Phase 1 ; elle est étendue ici pour refléter
-    l'ajout légitime du catalogue (Phase 3), sans quoi ce test
-    échouerait en permanence dès qu'une phase ajoute une table — ce
-    qui n'est pas son objectif (vérifier qu'aucune table imprévue/hors
-    MVP n'apparaît), documenté explicitement en Phase 3.
+    Mise à jour justifiée : cette assertion évolue à chaque phase qui
+    ajoute légitimement une table (déjà documenté en Phase 3) — son
+    objectif est de vérifier qu'aucune table imprévue/hors MVP
+    n'apparaît, pas de rester figée à un instant donné.
 
-    Les tables encore hors périmètre (lyrics, translations, favorites,
-    rights_records — Phases 4-7) ne doivent PAS encore être présentes.
+    Les tables encore hors périmètre (translations, favorites,
+    rights_records — Phases 5-7) ne doivent PAS encore être présentes.
     Les entités définitivement hors MVP (artist_aliases,
     lyrics_versions, sources, history) ne doivent JAMAIS apparaître.
     """
     table_names = set(Base.metadata.tables.keys())
-    assert table_names == {"roles", "categories", "languages", "users", "artists", "albums", "songs"}
+    assert table_names == {
+        "roles",
+        "categories",
+        "languages",
+        "users",
+        "artists",
+        "albums",
+        "songs",
+        "lyrics",
+    }
 
 
 def test_role_check_constraint_restricts_to_user_and_admin() -> None:

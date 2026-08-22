@@ -7,7 +7,7 @@
 | 1 | Backend Foundation (config, DB, Alembic, /health, tests) | ✅ Terminée |
 | 2 | Authentication (register/login/logout/me) | ✅ Terminée |
 | 3 | Catalogue (artists/albums/songs, categories, languages) | ✅ Terminée |
-| 4 | Lyrics | ⏳ À venir |
+| 4 | Lyrics (portée Option A — hors rights_records/modération) | ✅ Terminée |
 | 5 | Translations | ⏳ À venir |
 | 6 | Favorites | ⏳ À venir |
 | 7 | Administration (modération, rights records) | ⏳ À venir |

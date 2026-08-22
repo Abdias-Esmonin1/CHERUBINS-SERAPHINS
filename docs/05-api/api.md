@@ -121,8 +121,70 @@ artist_id/album_id/category_id/original_language_id invalide.
 
 ## Non implémenté (phases suivantes)
 
-`lyrics`, `translations`, `favorites`, `admin/*` (modération) — voir
-`docs/roadmap.md`.
+`translations`, `favorites`, `admin/*` (modération, `rights_records`)
+— voir `docs/roadmap.md`.
+
+## Implémenté — Phase 4 (Lyrics)
+
+```
+POST /api/v1/lyrics
+GET  /api/v1/lyrics/mine
+GET  /api/v1/lyrics/song/{song_id}
+PUT  /api/v1/lyrics/{lyrics_id}
+```
+
+**⚠️ Portée Phase 4 = Option A (validée)** : aucune transition de
+statut n'est possible via l'API dans cette phase. Les endpoints
+`PATCH /admin/lyrics/{id}/{authorize,reject,revoke}` et la table
+`rights_records` appartiennent explicitement à la **Phase 7 —
+Administration**. Une parole soumise reste `PENDING` jusqu'à
+l'implémentation de cette phase — ce n'est pas un oubli, c'est la
+portée validée.
+
+**POST /lyrics** : auth requise (`USER`/`ADMIN`). Body `{song_id,
+language_id, content, source_type, source_url?, rights_holder?}` —
+`submitted_by_user_id` et `authorization_status` structurellement
+absents du schéma d'entrée, forcés côté serveur (`PENDING`, utilisateur
+courant). Erreurs : `404 SONG_NOT_FOUND`, `404 LANGUAGE_NOT_FOUND`,
+`409 LYRICS_ALREADY_EXISTS` (une seule ligne `lyrics` par chanson),
+`422` (source_type hors énumération).
+
+**GET /lyrics/song/{song_id}** : public (authentification optionnelle).
+Toujours `200`, jamais `403`/`404` pour une absence de contenu (évite
+l'énumération de l'état des droits) :
+```
+Visiteur public / autre USER : {available: bool, language?, content?}
+                                — uniquement si AUTHORIZED et
+                                  (expiration_date IS NULL OR
+                                   expiration_date >= aujourd'hui)
+Auteur (submitted_by_user_id == current_user.id) : vue enrichie
+                                complète, quel que soit le statut
+ADMIN : vue enrichie complète, quel que soit le statut
+```
+`404 SONG_NOT_FOUND` uniquement si `song_id` ne référence aucune
+chanson (indépendant de `Song.status`).
+
+**PUT /lyrics/{id}** : auteur (si `authorization_status = PENDING`
+uniquement) ou `ADMIN` (même restriction `PENDING` — voir décision
+ci-dessous). Body limité à `{content?, source_url?, rights_holder?}` ;
+`song_id`, `language_id`, `source_type`, `submitted_by_user_id`,
+`authorization_status`, `reviewed_by_user_id` structurellement absents.
+Erreurs : `404 LYRICS_NOT_FOUND`, `403` (tiers), `409
+LYRICS_ALREADY_REVIEWED` (statut ≠ `PENDING`).
+
+**GET /lyrics/mine** : auth requise. Retourne uniquement les
+soumissions de `current_user`, tous statuts, paginé — aucun `user_id`
+acceptable en paramètre (protection IDOR par construction).
+
+### Décision d'interprétation documentée (Phase 4)
+
+La restriction "édition uniquement si `PENDING`" s'applique **à
+l'auteur ET à l'ADMIN** de façon identique sur `PUT /lyrics/{id}`,
+conformément au contrat initial du Livrable 3 §8.3 ("Un ADMIN ou
+l'auteur... peut corriger... tant que `authorization_status =
+PENDING`"). Cet endpoint ne gère que l'édition de contenu — les
+actions de modération de la Phase 7 (`authorize`/`reject`/`revoke`)
+seront un mécanisme distinct, non soumis à cette même restriction.
 
 ## Écarts / limitations documentés — Phase 3
 
@@ -135,9 +197,12 @@ artist_id/album_id/category_id/original_language_id invalide.
    changer le contrat API. **Signalé comme point à valider**, pas
    tranché silencieusement comme définitif.
 2. **`lyrics_available`** (prévu par les wireframes, Livrable 4) n'est
-   pas encore dans `SongRead` — la table `lyrics` n'existe pas avant
-   la Phase 4. Sera ajouté à ce moment, sans changement de structure
-   ailleurs.
+   toujours pas dans `SongRead` — la table `lyrics` existe désormais
+   (Phase 4), mais l'ajout de ce champ nécessiterait de modifier
+   `SongRead`/`catalog_service.py` (Phase 3), ce qui n'était pas dans
+   le périmètre annoncé de la Phase 4. Reste possible sans rupture,
+   non fait ici pour respecter strictement la liste de fichiers
+   annoncée.
 3. **CRUD partiel** : `PUT`/`DELETE` sur `artists`, `albums`,
    `categories`, `languages` ne sont pas implémentés en Phase 3 (seuls
    `GET` et `POST` où pertinent) — la Phase 3 s'est concentrée sur le

@@ -29,7 +29,7 @@ lyrics, translations, favorites, rights_records
 | `artists` | ✅ implémentée (migration `0002_catalog`) |
 | `albums` | ✅ implémentée (migration `0002_catalog`) |
 | `songs` | ✅ implémentée (migration `0002_catalog`) |
-| `lyrics` | ⏳ Phase 4 — Lyrics |
+| `lyrics` | ✅ implémentée (migration `0003_lyrics`) |
 | `translations` | ⏳ Phase 5 — Translations |
 | `favorites` | ⏳ Phase 6 — Favorites |
 | `rights_records` | ⏳ Phase 7 — Administration |
@@ -141,9 +141,46 @@ JSON générique sur les moteurs sans support JSONB (utilisé
 uniquement par la base de test SQLite en mémoire — voir
 `tests/conftest.py`). Aucun impact sur le contrat API.
 
+## Tables implémentées (Phase 4)
+
+### lyrics
+```
+id                       UUID PK
+song_id                  FK -> songs.id UNIQUE NOT NULL   ON DELETE RESTRICT
+language_id              FK -> languages.id NOT NULL       ON DELETE RESTRICT
+content                  TEXT NOT NULL
+source_type              VARCHAR(20) NOT NULL
+                         CHECK IN ('ORIGINAL','ARTIST','RIGHTS_HOLDER',
+                                   'LICENSE','PARTNER','PUBLIC_DOMAIN',
+                                   'USER_SUBMITTED')
+source_url               TEXT
+rights_holder            VARCHAR(255)
+authorization_status     VARCHAR(20) NOT NULL DEFAULT 'PENDING'
+                         CHECK IN ('PENDING','AUTHORIZED','REJECTED',
+                                   'EXPIRED','REVOKED')
+authorization_reference  VARCHAR(100)
+authorization_date       DATE
+expiration_date          DATE
+submitted_by_user_id     FK -> users.id                    ON DELETE SET NULL
+reviewed_by_user_id      FK -> users.id                     ON DELETE SET NULL
+created_at               TIMESTAMPTZ NOT NULL DEFAULT now()
+updated_at               TIMESTAMPTZ NOT NULL DEFAULT now()
+```
+Relation `Song 1 -- 0..1 Lyrics` (une seule ligne par chanson, pas de
+versions). `submitted_by_user_id`/`authorization_status` toujours
+forcés côté serveur, jamais fournis par le client.
+
+**Portée Phase 4 (Option A, validée)** : `rights_records` et les
+endpoints de modération (`PATCH .../authorize|reject|revoke`)
+n'existent PAS dans cette phase — explicitement réservés à la
+**Phase 7 — Administration**. Une parole soumise reste donc `PENDING`
+jusqu'à l'implémentation de cette phase ultérieure. Ce n'est pas un
+oubli : c'est la portée validée.
+
 ## Point d'attention documenté (non résolu par du code, pour référence)
 
-`EXPIRED` (sur `lyrics`/`translations`, tables à venir) sera calculé à
+`EXPIRED` (sur `lyrics`, implémentée en Phase 4 ; `translations`,
+table à venir) est calculé à
 la lecture (`expiration_date < now()`), jamais écrit automatiquement
 en base — pas de scheduler/Celery/cron en MVP (décision validée,
 Livrable 3, arbitrage final).

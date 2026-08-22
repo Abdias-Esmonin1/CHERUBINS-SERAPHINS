@@ -12,9 +12,8 @@ class Song(Base):
     """Chanson référencée — peut exister sans paroles publiées (Song 1 -- 0..1 Lyrics).
 
     Référencer une chanson ne signifie pas publier ses paroles
-    (Stratégie de contenu §3, §12) — la table `lyrics` sera ajoutée en
-    Phase 4 avec sa propre règle de visibilité, indépendante de
-    `Song.status`.
+    (Stratégie de contenu §3, §12) — voir `lyrics.py` (Phase 4) pour la
+    règle de visibilité, indépendante de `Song.status`.
     """
 
     __tablename__ = "songs"
@@ -43,6 +42,7 @@ class Song(Base):
     album: Mapped["Album | None"] = relationship(back_populates="songs")
     category: Mapped["Category | None"] = relationship(back_populates="songs")
     original_language: Mapped["Language"] = relationship(back_populates="songs")
+    lyrics: Mapped["Lyrics | None"] = relationship(back_populates="song")
 
     __table_args__ = (
         CheckConstraint("status IN ('DRAFT', 'PUBLISHED', 'ARCHIVED')", name="ck_songs_status"),
