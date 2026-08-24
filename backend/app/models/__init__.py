@@ -5,6 +5,7 @@ from app.models.category import Category
 from app.models.favorite import Favorite
 from app.models.language import Language
 from app.models.lyrics import Lyrics
+from app.models.rights_record import RightsRecord
 from app.models.role import Role
 from app.models.song import Song
 from app.models.translation import Translation
@@ -18,6 +19,7 @@ __all__ = [
     "Favorite",
     "Language",
     "Lyrics",
+    "RightsRecord",
     "Role",
     "Song",
     "Translation",

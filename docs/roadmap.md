@@ -10,7 +10,7 @@
 | 4 | Lyrics (portée Option A — hors rights_records/modération) | ✅ Terminée |
 | 5 | Translations (portée Option A — symétrique Phase 4) | ✅ Terminée |
 | 6 | Favorites | ✅ Terminée |
-| 7 | Administration (modération, rights records) | ⏳ À venir |
+| 7 | Administration (modération, rights records) | ✅ Terminée |
 | 8 | Frontend Next.js | ⏳ À venir |
 | 9 | Tests (couverture complète) | ⏳ À venir |
 | 10 | Docker / CI / finalisation | ⏳ À venir |

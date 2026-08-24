@@ -23,8 +23,13 @@ class Translation(Base):
     décision validée en conception).
 
     Phase 5 (portée validée, symétrique à l'Option A de la Phase 4
-    pour Lyrics) : aucune transition de statut ni `rights_records` —
-    réservés à la Phase 7.
+    pour Lyrics) : aucune transition de statut ni `rights_records` en
+    Phase 5 — réservés à la Phase 7.
+
+    `authorization_reference`/`authorization_date` ajoutés en Phase 7
+    (Option A validée) : jugés non requis en Phase 5, ils deviennent
+    nécessaires au contrat de l'endpoint `authorize` de la
+    modération admin.
     """
 
     __tablename__ = "translations"
@@ -39,6 +44,8 @@ class Translation(Base):
     authorization_status: Mapped[str] = mapped_column(
         String(20), nullable=False, default="PENDING", server_default="PENDING"
     )
+    authorization_reference: Mapped[str | None] = mapped_column(String(100))
+    authorization_date: Mapped[date | None] = mapped_column(Date)
     expiration_date: Mapped[date | None] = mapped_column(Date)
     source_url: Mapped[str | None] = mapped_column(Text)
     rights_holder: Mapped[str | None] = mapped_column(String(255))

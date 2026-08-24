@@ -13,7 +13,21 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import get_settings
 from app.exceptions.handlers import register_exception_handlers
-from app.routers import albums, artists, auth, categories, favorites, languages, lyrics, songs, translations
+from app.routers import (
+    admin_lyrics,
+    admin_rights_records,
+    admin_stats,
+    admin_translations,
+    albums,
+    artists,
+    auth,
+    categories,
+    favorites,
+    languages,
+    lyrics,
+    songs,
+    translations,
+)
 
 settings = get_settings()
 
@@ -51,6 +65,10 @@ app.include_router(songs.router, prefix="/api/v1/songs", tags=["songs"])
 app.include_router(lyrics.router, prefix="/api/v1/lyrics", tags=["lyrics"])
 app.include_router(translations.router, prefix="/api/v1/translations", tags=["translations"])
 app.include_router(favorites.router, prefix="/api/v1/favorites", tags=["favorites"])
+app.include_router(admin_lyrics.router, prefix="/api/v1/admin/lyrics", tags=["admin"])
+app.include_router(admin_translations.router, prefix="/api/v1/admin/translations", tags=["admin"])
+app.include_router(admin_rights_records.router, prefix="/api/v1/admin/rights-records", tags=["admin"])
+app.include_router(admin_stats.router, prefix="/api/v1/admin/stats", tags=["admin"])
 
-# Les routers métier des phases suivantes seront inclus ici :
-# app.include_router(admin_lyrics.router, prefix="/api/v1/admin/lyrics", tags=["admin"])
+# Phase 8 (Frontend) et suivantes : aucun router backend supplémentaire
+# n'est prévu à ce stade du MVP.

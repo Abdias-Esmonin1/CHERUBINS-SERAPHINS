@@ -140,6 +140,27 @@ viewer.
 
 ## 8. Historique des décisions
 
+**État Phase 7** : système d'administration/modération implémenté
+(`models/rights_record.py`, `schemas/rights_record.py`,
+`schemas/admin.py`, `repositories/rights_record_repository.py`,
+`services/moderation_service.py`, `services/admin_service.py`,
+`routers/admin_{lyrics,translations,rights_records,stats}.py`). MVP
+backend fonctionnel complet (Phases 1-7).
+
+`moderation_service.py` centralise toute la logique de transition
+pour `Lyrics` **et** `Translation` (authorize/reject/revoke),
+garantissant la cohérence transactionnelle stricte (mise à jour de la
+ressource + création du `RightsRecord` dans une seule transaction,
+aucune transition invalide n'écrit quoi que ce soit). Introduit la
+notion de **statut effectif** (`_effective_status`) pour valider la
+transition `EXPIRED -> AUTHORIZED`, cohérente avec la règle déjà en
+place où `EXPIRED` n'est jamais littéralement stocké.
+
+`Translation` a reçu `authorization_reference`/`authorization_date`
+(Option A validée, Phase 7) — exclues en Phase 5, devenues
+nécessaires au contrat de l'endpoint `authorize`.
+
+
 **État Phase 6** : système Favorites implémenté
 (`models/favorite.py`, `schemas/favorite.py`,
 `repositories/favorite_repository.py`,

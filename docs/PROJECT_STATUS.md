@@ -127,8 +127,33 @@
   - 21 nouveaux tests (146 au total), tous passants, stables sur 3
     exécutions consécutives.
 
+- Phase 7 — Administration / Rights Records / Modération (Terminée) :
+  - Table `rights_records` (migration `0006_rights_records`, chaînée
+    après `0005`) — cible polymorphe `lyrics_id` XOR `translation_id`
+    (`CHECK` d'exclusivité), append-only strict (aucun endpoint
+    d'écriture, aucune méthode update/delete sur le repository).
+  - **Option A validée** : `authorization_reference`/
+    `authorization_date` ajoutées à `Translation` (exclues en Phase 5,
+    requises maintenant par le contrat `authorize`), incluses dans la
+    même migration `0006` (choix documenté : un seul changement
+    fonctionnel cohérent).
+  - `moderation_service.py` : logique centralisée pour `Lyrics` ET
+    `Translation` — authorize (`PENDING`/`EXPIRED` → `AUTHORIZED`,
+    statut *effectif* calculé comme pour la visibilité publique),
+    reject (`PENDING` → `REJECTED`, `reason` obligatoire), revoke
+    (`AUTHORIZED` → `REVOKED`, `reason` obligatoire). Toute transition
+    hors de ces règles → `409 INVALID_TRANSITION`, sans écriture.
+  - Cohérence transactionnelle stricte vérifiée explicitement par
+    test dédié : une transition valide crée exactement 1
+    `rights_record` ; une transition invalide n'en crée aucun.
+  - 10 endpoints `/api/v1/admin/*` (lyrics, translations,
+    rights-records, stats), tous protégés `require_admin`.
+  - 35 nouveaux tests (181 au total), tous passants, stables sur 3
+    exécutions consécutives. IDOR vérifié explicitement sur les 12
+    routes admin (403 pour tout non-admin).
+  - **MVP backend fonctionnel complet** (Phases 1-7).
+
 ## En cours / à faire (par phase, ordre validé)
-- Phase 7 — Administration (modération, rights records).
 - Phase 8 — Frontend Next.js.
 - Phase 9 — Tests (couverture complète).
 - Phase 10 — Docker/CI finalisation (ajout du service frontend).

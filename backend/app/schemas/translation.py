@@ -44,6 +44,8 @@ class TranslationOwnerRead(BaseModel):
     content: str
     translation_type: str
     authorization_status: str
+    authorization_reference: str | None = None
+    authorization_date: date | None = None
     expiration_date: date | None = None
     source_url: str | None = None
     rights_holder: str | None = None

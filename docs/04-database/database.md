@@ -32,7 +32,7 @@ lyrics, translations, favorites, rights_records
 | `lyrics` | ✅ implémentée (migration `0003_lyrics`) |
 | `translations` | ✅ implémentée (migration `0004_translations`) |
 | `favorites` | ✅ implémentée (migration `0005_favorites`) |
-| `rights_records` | ⏳ Phase 7 — Administration |
+| `rights_records` | ✅ implémentée (migration `0006_rights_records`) |
 
 ## Tables implémentées (Phase 1)
 
@@ -243,6 +243,60 @@ sur `Song.status` — une chanson `DRAFT`/`ARCHIVED` peut être mise en
 favori si son UUID est connu ; seule l'existence de la chanson est
 vérifiée (même comportement que `SongRepository.get_by_id`, déjà
 utilisé sans filtre de statut par `Lyrics`/`Translation`).
+
+## Tables implémentées (Phase 7)
+
+### rights_records
+```
+id                     UUID PK
+lyrics_id              FK -> lyrics.id NULLABLE         ON DELETE RESTRICT
+translation_id         FK -> translations.id NULLABLE    ON DELETE RESTRICT
+action                 VARCHAR(20) NOT NULL   CHECK IN ('VALIDATED','REJECTED','REVOKED')
+previous_status        VARCHAR(20)
+new_status             VARCHAR(20) NOT NULL
+reason                 TEXT
+performed_by_user_id   FK -> users.id                     ON DELETE SET NULL
+created_at             TIMESTAMPTZ NOT NULL DEFAULT now()
+
+CHECK (
+  (lyrics_id IS NOT NULL AND translation_id IS NULL)
+  OR
+  (lyrics_id IS NULL AND translation_id IS NOT NULL)
+)
+```
+**Append-only strict** : aucun endpoint ni méthode de repository ne
+permet une modification ou suppression. Chaque transition valide
+(`authorize`/`reject`/`revoke`) crée exactement un enregistrement,
+dans la même transaction que la mise à jour de la ressource
+(`moderation_service.py`).
+
+`action` ne couvre que les 3 transitions pilotées par un ADMIN :
+`VALIDATED` (authorize, que ce soit depuis `PENDING` ou depuis un état
+effectivement `EXPIRED`), `REJECTED`, `REVOKED`. L'événement
+`SUBMITTED` n'est pas rétroactivement tracé (limitation documentée,
+n'aurait nécessité de modifier `lyrics_service.submit()`/
+`translation_service.submit()`, hors périmètre validé de la Phase 7).
+
+### translations — colonnes ajoutées (Phase 7, Option A validée)
+```
+authorization_reference   VARCHAR(100)
+authorization_date        DATE
+```
+Absentes depuis la Phase 5 (exclusion documentée : "pas encore
+requises"), ajoutées maintenant car le contrat de l'endpoint
+`PATCH /admin/translations/{id}/authorize` les requiert, symétrique à
+`Lyrics`.
+
+### Note technique — statut effectif vs statut stocké
+
+`EXPIRED` reste **calculé à la lecture**, jamais littéralement écrit
+en base (aucun scheduler). Conséquence pour la modération : la
+transition `EXPIRED -> AUTHORIZED` ("restaurer") est validée en
+comparant le **statut effectif** d'un enregistrement (calculé comme
+pour la règle de visibilité publique : `authorization_status ==
+'AUTHORIZED'` ET `expiration_date` dépassée => effectif `'EXPIRED'`),
+et non la valeur brute stockée en colonne — qui ne contient jamais
+littéralement `'EXPIRED'`.
 
 ## Point d'attention documenté (non résolu par du code, pour référence)
 

@@ -121,7 +121,9 @@ artist_id/album_id/category_id/original_language_id invalide.
 
 ## Non implémenté (phases suivantes)
 
-`admin/*` (modération, `rights_records`) — voir `docs/roadmap.md`.
+Frontend (Phase 8), couverture de tests étendue (Phase 9), Docker/CI
+(Phase 10) — voir `docs/roadmap.md`. Le backend fonctionnel du MVP
+(Phases 1-7) est désormais complet.
 
 ## Implémenté — Phase 4 (Lyrics)
 
@@ -282,6 +284,59 @@ chanson `DRAFT`/`ARCHIVED` peut être ajoutée aux favoris si son UUID
 est connu. Signalé comme ambiguïté avant implémentation (aucun
 document ne tranchait ce point), retenu par défaut en l'absence
 d'objection explicite. Voir `docs/04-database/database.md`.
+
+## Implémenté — Phase 7 (Administration / Rights Records / Modération)
+
+```
+GET   /api/v1/admin/lyrics?status=...
+GET   /api/v1/admin/lyrics/{id}
+PATCH /api/v1/admin/lyrics/{id}/authorize
+PATCH /api/v1/admin/lyrics/{id}/reject
+PATCH /api/v1/admin/lyrics/{id}/revoke
+
+GET   /api/v1/admin/translations?status=...
+GET   /api/v1/admin/translations/{id}
+PATCH /api/v1/admin/translations/{id}/authorize
+PATCH /api/v1/admin/translations/{id}/reject
+PATCH /api/v1/admin/translations/{id}/revoke
+
+GET   /api/v1/admin/rights-records
+GET   /api/v1/admin/stats
+```
+
+**Tous protégés `require_admin`, sans exception.** Aucun endpoint
+d'écriture n'existe sur `/admin/rights-records` — append-only garanti
+au niveau API, pas seulement en base.
+
+**PATCH .../authorize** : transitions `PENDING -> AUTHORIZED` et
+`EXPIRED -> AUTHORIZED` (statut effectif, voir
+`docs/04-database/database.md`). Body `{authorization_reference?,
+authorization_date?, expiration_date?}`, identique pour `lyrics` et
+`translations`. Renseigne `reviewed_by_user_id`, crée un
+`rights_records` (`action=VALIDATED`).
+
+**PATCH .../reject** : transition `PENDING -> REJECTED` uniquement.
+Body `{reason}` — `reason` **obligatoire** (`422` sinon).
+
+**PATCH .../revoke** : transition `AUTHORIZED -> REVOKED` uniquement.
+Body `{reason}` — `reason` **obligatoire**.
+
+Toute transition hors de ces règles → `409 INVALID_TRANSITION`, sans
+création de `rights_records` (cohérence transactionnelle stricte —
+une transition invalide ne modifie jamais la ressource ni ne crée
+d'audit).
+
+**GET /admin/lyrics** / **GET /admin/translations** : filtre optionnel
+`?status=`, pagination standard.
+
+**GET /admin/rights-records** : filtres `lyrics_id`, `translation_id`,
+`action`, `performed_by_user_id`, pagination.
+
+**GET /admin/stats** : `users_count, songs_count, artists_count,
+albums_count, categories_count, languages_count, favorites_count,
+lyrics_by_status_count` (répartition par statut réellement stocké —
+`EXPIRED` y apparaît toujours à 0, ce statut n'étant jamais
+littéralement écrit en base).
 
 ## Écarts / limitations documentés — Phase 3
 
