@@ -109,7 +109,7 @@ function LyricsAvailability({ slug, songId }: { slug: string; songId: string }) 
     <div className="flex flex-col gap-3">
       <p className="font-medium">Paroles non disponibles actuellement</p>
       {isAuthenticated && (
-        <Button variant="outline" render={<Link href={`/songs/${slug}/submissions/lyrics/new`} />}>
+        <Button variant="outline" render={<Link href={`/submissions/lyrics/new?song=${slug}`} />}>
           Proposer ces paroles
         </Button>
       )}

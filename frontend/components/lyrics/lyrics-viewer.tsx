@@ -81,7 +81,7 @@ export function LyricsViewer({ slug, isAuthenticated, view }: LyricsViewerProps)
         <div className="flex flex-col items-center gap-4 rounded-xl border border-border p-8 text-center">
           <p className="text-muted-foreground">Ces paroles ne sont pas disponibles actuellement.</p>
           {isAuthenticated && (
-            <Button variant="outline" render={<Link href={`/songs/${slug}/submissions/lyrics/new`} />}>
+            <Button variant="outline" render={<Link href={`/submissions/lyrics/new?song=${slug}`} />}>
               Proposer ces paroles
             </Button>
           )}
