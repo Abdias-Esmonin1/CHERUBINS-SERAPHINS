@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { useAuth } from "@/providers/auth-provider";
@@ -70,7 +71,10 @@ export default function ProfilePage() {
             {new Date(user.created_at).toLocaleDateString("fr-FR")}
           </p>
         </CardContent>
-        <CardFooter>
+        <CardFooter className="flex flex-col gap-2">
+          <Button variant="outline" className="w-full" render={<Link href="/favorites" />}>
+            Mes favoris
+          </Button>
           <Button
             type="button"
             variant="outline"
